@@ -35,9 +35,17 @@
       <el-table-column prop="ClassName" label="班级名称" width="150" />
       <el-table-column prop="Grade" label="年级" width="100" />
       <el-table-column prop="TeacherName" label="班主任" width="120" />
-      <el-table-column prop="StudentCount" label="学生人数" width="100" />
-      <el-table-column prop="CreateTime" label="创建时间" width="180" />
-      <el-table-column prop="Description" label="描述" min-width="200" />
+      <el-table-column prop="StudentCount" label="学生人数" width="100">
+        <template #default="{ row }">
+          <el-tag size="small">{{ row.StudentCount || 0 }}人</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="Description" label="描述" min-width="200" show-overflow-tooltip />
+      <el-table-column prop="CreateTime" label="创建时间" width="180">
+        <template #default="{ row }">
+          {{ formatTimestamp(row.CreateTime) }}
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="180" fixed="right">
         <template #default="{ row }">
           <el-button type="primary" link @click="handleEdit(row)">
@@ -68,6 +76,9 @@
       :title="dialogType === 'add' ? '添加班级' : '编辑班级'"
       v-model="dialogVisible"
       width="500px"
+      draggable
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
     >
       <el-form
         ref="formRef"
@@ -82,14 +93,27 @@
           <el-input v-model="classForm.ClassName" />
         </el-form-item>
         <el-form-item label="年级" prop="Grade">
-          <el-select v-model="classForm.Grade">
-            <el-option label="一年级" value="一年级" />
-            <el-option label="二年级" value="二年级" />
-            <el-option label="三年级" value="三年级" />
+          <el-select
+            v-model="classForm.Grade"
+            placeholder="请选择年级"
+            filterable
+            allow-create
+            default-first-option
+            :reserve-keyword="false"
+          >
+            <el-option
+              v-for="grade in gradeOptions"
+              :key="grade"
+              :label="grade"
+              :value="grade"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="班主任" prop="TeacherName">
           <el-input v-model="classForm.TeacherName" />
+        </el-form-item>
+        <el-form-item label="学生人数" prop="StudentCount">
+          <el-input-number v-model="classForm.StudentCount" :min="0" />
         </el-form-item>
         <el-form-item label="描述" prop="Description">
           <el-input v-model="classForm.Description" type="textarea" />
@@ -129,8 +153,32 @@ const classForm = ref({
   ClassName: '',
   Grade: '',
   TeacherName: '',
+  StudentCount: 0,
   Description: ''
 })
+
+// 年级选项
+const gradeOptions = ref([
+  '一年级',
+  '二年级',
+  '三年级',
+  '四年级',
+  '五年级',
+  '六年级',
+  '初一',
+  '初二',
+  '初三',
+  '高一',
+  '高二',
+  '高三'
+])
+
+// 格式化时间戳
+const formatTimestamp = (timestamp) => {
+  if (!timestamp) return '--'
+  const date = new Date(timestamp * 1000)
+  return date.toLocaleString()
+}
 
 // 表单验证规则
 const rules = {
@@ -143,7 +191,8 @@ const rules = {
     { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
   ],
   Grade: [{ required: true, message: '请选择年级', trigger: 'change' }],
-  TeacherName: [{ required: true, message: '请输入班主任姓名', trigger: 'blur' }]
+  TeacherName: [{ required: true, message: '请输入班主任姓名', trigger: 'blur' }],
+  StudentCount: [{ required: true, message: '请输入学生人数', trigger: 'blur' }]
 }
 
 // 获取班级列表
@@ -208,6 +257,7 @@ const handleAdd = () => {
     ClassName: '',
     Grade: '',
     TeacherName: '',
+    StudentCount: 0,
     Description: ''
   }
   dialogVisible.value = true

@@ -70,6 +70,7 @@
       :title="dialogType === 'add' ? '添加学生' : '编辑学生'"
       v-model="dialogVisible"
       width="600px"
+      draggable
     >
       <el-form
         ref="formRef"
@@ -98,7 +99,11 @@
           />
         </el-form-item>
         <el-form-item label="班级" prop="ClassID">
-          <el-select v-model="studentForm.ClassID" placeholder="请选择班级">
+          <el-select 
+            v-model="studentForm.ClassID" 
+            placeholder="请选择班级"
+            clearable
+          >
             <el-option
               v-for="item in classList"
               :key="item.ClassID"
@@ -224,8 +229,13 @@ const getStudents = async () => {
 const fetchClassList = async () => {
   try {
     const res = await getClassList()
-    if (res.data) {
-      classList.value = Array.isArray(res.data) ? res.data : []
+    console.log('班级列表原始响应:', res)
+    
+    if (res.success) {  // 使用 success 判断
+      classList.value = res.data.rows  // 取 data.rows 作为班级列表
+      console.log('处理后的班级列表:', classList.value)
+    } else {
+      ElMessage.error(res.message || '获取班级列表失败')
     }
   } catch (error) {
     console.error('获取班级列表失败:', error)

@@ -1,57 +1,77 @@
 -- 检查并创建数据库
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'StudentDB')
 BEGIN
-    CREATE DATABASE StudentDB;
+    CREATE DATABASE StudentDB
 END
 GO
 
 -- 使用 StudentDB
-USE StudentDB;
+USE StudentDB
 GO
 
 -- 先删除现有的表（注意删除顺序，先删除有外键依赖的表）
 IF EXISTS (SELECT * FROM sys.tables WHERE name = 'UserPermissions')
-    DROP TABLE UserPermissions;
+    DROP TABLE UserPermissions
+GO
+
 IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Permissions')
-    DROP TABLE Permissions;
+    DROP TABLE Permissions
+GO
+
 IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Scores')
-    DROP TABLE Scores;
+    DROP TABLE Scores
+GO
+
 IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Students')
-    DROP TABLE Students;
+    DROP TABLE Students
+GO
+
 IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Courses')
-    DROP TABLE Courses;
+    DROP TABLE Courses
+GO
+
 IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Classes')
-    DROP TABLE Classes;
+    DROP TABLE Classes
+GO
+
 IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Users')
-    DROP TABLE Users;
+    DROP TABLE Users
 GO
 
 -- 创建班级表
 CREATE TABLE Classes (
     ClassID INT PRIMARY KEY IDENTITY(1,1),        -- 班级ID，主键自增
+    ClassNo VARCHAR(10) NOT NULL UNIQUE,          -- 班级编号，唯一
     ClassName NVARCHAR(50) NOT NULL,              -- 班级名称
     Grade NVARCHAR(20) NOT NULL,                  -- 年级
+    TeacherName NVARCHAR(20),                     -- 班主任姓名
+    StudentCount INT DEFAULT 0,                   -- 学生人数
+    Description NVARCHAR(500),                    -- 描述
+    IsDelete BIT NOT NULL DEFAULT 0,              -- 是否删除，0-未删除，1-已删除
     CreateTime BIGINT NOT NULL DEFAULT DATEDIFF(SECOND, '1970-01-01', GETUTCDATE()),    -- 创建时间（时间戳）
     UpdateTime BIGINT NOT NULL DEFAULT DATEDIFF(SECOND, '1970-01-01', GETUTCDATE())     -- 更新时间（时间戳）
 )
 GO
 
--- 创建学生表
-CREATE TABLE Students (
-    StudentID INT PRIMARY KEY IDENTITY(1,1),      -- 学生ID，主键自增
-    StudentNo NVARCHAR(20) NOT NULL UNIQUE,       -- 学号，唯一
-    Name NVARCHAR(50) NOT NULL,                   -- 学生姓名
-    Gender NVARCHAR(10) NOT NULL,                 -- 性别
-    BirthYear INT,                                -- 出生年份
-    ClassID INT,                                  -- 班级ID，外键
-    Phone NVARCHAR(20),                           -- 联系电话
-    Address NVARCHAR(200),                        -- 家庭住址
-    Status NVARCHAR(20) DEFAULT '在读',           -- 学生状态
-    CreateTime BIGINT NOT NULL DEFAULT DATEDIFF(SECOND, '1970-01-01', GETUTCDATE()),
-    UpdateTime BIGINT NOT NULL DEFAULT DATEDIFF(SECOND, '1970-01-01', GETUTCDATE()),
-    CONSTRAINT FK_Students_Classes FOREIGN KEY (ClassID) 
-        REFERENCES Classes(ClassID)
-)
+-- 插入班级测试数据
+INSERT INTO Classes (ClassNo, ClassName, Grade, TeacherName, StudentCount, Description, IsDelete) 
+VALUES ('C001', N'一年级1班', N'一年级', N'张老师', 30, N'这是一年级1班，班主任是张老师', 0)
+GO
+
+INSERT INTO Classes (ClassNo, ClassName, Grade, TeacherName, StudentCount, Description, IsDelete) 
+VALUES ('C002', N'一年级2班', N'一年级', N'李老师', 28, N'这是一年级2班，班主任是李老师', 0)
+GO
+
+INSERT INTO Classes (ClassNo, ClassName, Grade, TeacherName, StudentCount, Description, IsDelete) 
+VALUES ('C003', N'二年级1班', N'二年级', N'王老师', 32, N'这是二年级1班，班主任是王老师', 0)
+GO
+
+INSERT INTO Classes (ClassNo, ClassName, Grade, TeacherName, StudentCount, Description, IsDelete) 
+VALUES ('C004', N'二年级2班', N'二年级', N'赵老师', 29, N'这是二年级2班，班主任是赵老师', 0)
+GO
+
+INSERT INTO Classes (ClassNo, ClassName, Grade, TeacherName, StudentCount, Description, IsDelete) 
+VALUES ('C005', N'三年级1班', N'三年级', N'刘老师', 31, N'这是三年级1班，班主任是刘老师', 0)
 GO
 
 -- 创建课程表
@@ -65,6 +85,52 @@ CREATE TABLE Courses (
     UpdateTime BIGINT NOT NULL DEFAULT DATEDIFF(SECOND, '1970-01-01', GETUTCDATE())
 )
 GO
+
+-- 插入课程测试数据
+INSERT INTO Courses (CourseName, Teacher, Credits, Description) 
+VALUES (N'语文', N'张老师', 4, N'基础语文课程')
+GO
+
+INSERT INTO Courses (CourseName, Teacher, Credits, Description) 
+VALUES (N'数学', N'李老师', 4, N'基础数学课程')
+GO
+
+INSERT INTO Courses (CourseName, Teacher, Credits, Description) 
+VALUES (N'英语', N'王老师', 4, N'基础英语课程')
+GO
+
+-- 创建学生表
+CREATE TABLE Students (
+    StudentID INT PRIMARY KEY IDENTITY(1,1),      -- 学生ID，主键自增
+    StudentNo NVARCHAR(20) NOT NULL UNIQUE,       -- 学号，唯一
+    Name NVARCHAR(50) NOT NULL,                   -- 学生姓名
+    Gender NVARCHAR(10) NOT NULL,                 -- 性别
+    BirthYear INT,                                -- 出生年份
+    ClassID INT,                                  -- 班级ID，外键
+    Phone NVARCHAR(20),                           -- 联系电话
+    Address NVARCHAR(200),                        -- 家庭住址
+    Status NVARCHAR(20) DEFAULT N'在读',           -- 学生状态
+    CreateTime BIGINT NOT NULL DEFAULT DATEDIFF(SECOND, '1970-01-01', GETUTCDATE()),
+    UpdateTime BIGINT NOT NULL DEFAULT DATEDIFF(SECOND, '1970-01-01', GETUTCDATE()),
+    CONSTRAINT FK_Students_Classes FOREIGN KEY (ClassID) 
+        REFERENCES Classes(ClassID)
+)
+GO
+
+-- 插入学生测试数据
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
+VALUES ('S001', N'张三', N'男', 2015, 1, '13800000001', N'北京市朝阳区', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
+VALUES ('S002', N'李四', N'女', 2015, 1, '13800000002', N'北京市海淀区', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
+VALUES ('S003', N'王五', N'男', 2015, 1, '13800000003', N'北京市西城区', N'在读')
+GO
+
+-- ... 继续插入其他学生数据 ...
 
 -- 创建成绩表
 CREATE TABLE Scores (
@@ -124,127 +190,16 @@ CREATE TABLE UserPermissions (
 )
 GO
 
--- 插入测试数据：班级
-IF NOT EXISTS (SELECT * FROM Classes)
-BEGIN
-    INSERT INTO Classes (ClassName, Grade) VALUES (N'一年级1班', N'一年级');
-    INSERT INTO Classes (ClassName, Grade) VALUES (N'一年级2班', N'一年级');
-    INSERT INTO Classes (ClassName, Grade) VALUES (N'二年级1班', N'二年级');
-END
-GO
-
--- 插入测试数据：课程
-IF NOT EXISTS (SELECT * FROM Courses)
-BEGIN
-    INSERT INTO Courses (CourseName, Teacher, Credits, Description) 
-        VALUES (N'语文', N'张老师', 4, N'基础语文课程');
-    INSERT INTO Courses (CourseName, Teacher, Credits, Description) 
-        VALUES (N'数学', N'李老师', 4, N'基础数学课程');
-    INSERT INTO Courses (CourseName, Teacher, Credits, Description) 
-        VALUES (N'英语', N'王老师', 4, N'基础英语课程');
-END
-GO
-
--- 插入测试数据：学生
-IF NOT EXISTS (SELECT * FROM Students WHERE StudentNo = 'S001')
-BEGIN
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S001', N'张三', N'男', 2015, 1, '13800000001', N'北京市朝阳区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S002', N'李四', N'女', 2015, 1, '13800000002', N'北京市海淀区', N'在读');
-        INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S003', N'王五', N'男', 2015, 1, '13800000003', N'北京市西城区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S004', N'赵六', N'女', 2015, 1, '13800000004', N'北京市东城区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S005', N'孙七', N'男', 2015, 1, '13800000005', N'北京市丰台区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S006', N'周八', N'女', 2015, 1, '13800000006', N'北京市石景山区', N'在读');
-    
-    -- 一年级2班的学生
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S007', N'吴九', N'男', 2015, 2, '13800000007', N'北京市海淀区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S008', N'郑十', N'女', 2015, 2, '13800000008', N'北京市朝阳区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S009', N'陈明', N'男', 2015, 2, '13800000009', N'北京市西城区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S010', N'林华', N'女', 2015, 2, '13800000010', N'北京市东城区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S011', N'杨光', N'男', 2015, 2, '13800000011', N'北京市丰台区', N'在读');
-    
-    -- 二年级1班的学生
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S012', N'黄河', N'男', 2014, 3, '13800000012', N'北京市海淀区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S013', N'刘星', N'女', 2014, 3, '13800000013', N'北京市朝阳区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S014', N'张雨', N'男', 2014, 3, '13800000014', N'北京市西城区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S015', N'李云', N'女', 2014, 3, '13800000015', N'北京市东城区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S016', N'王芳', N'女', 2014, 3, '13800000016', N'北京市丰台区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S017', N'赵阳', N'男', 2014, 3, '13800000017', N'北京市石景山区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S018', N'钱多', N'男', 2014, 3, '13800000018', N'北京市海淀区', N'在读');
-    
-    INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-    VALUES ('S019', N'孙亮', N'女', 2014, 3, '13800000019', N'北京市朝阳区', N'在读');
-    
-    -- ... 继续插入其他学生数据 ...
-END
-GO
-
 -- 插入默认管理员账号
-IF NOT EXISTS (SELECT * FROM Users WHERE Username = 'admin')
-BEGIN
-    INSERT INTO Users (Username, Password, RealName, Role, Status)
-    VALUES ('admin', 'e10adc3949ba59abbe56e057f20f883e', N'系统管理员', 'admin', 1)
-END
+INSERT INTO Users (Username, Password, RealName, Role, Status)
+VALUES ('admin', 'e10adc3949ba59abbe56e057f20f883e', N'系统管理员', 'admin', 1)
 GO
 
 -- 插入权限数据
-IF NOT EXISTS (SELECT * FROM Permissions)
-BEGIN
-    -- 系统管理权限
-    INSERT INTO Permissions (PermissionName, PermissionCode, Description, Type, ParentID, Path)
-    VALUES (N'系统管理', 'system:manage', N'系统管理模块', N'菜单', NULL, '/system');
-    
-    INSERT INTO Permissions (PermissionName, PermissionCode, Description, Type, ParentID, Path)
-    VALUES (N'用户管理', 'user:manage', N'用户管理功能', N'菜单', 1, '/system/user');
-    
-    -- ... 继续插入其他权限数据 ...
-END
+INSERT INTO Permissions (PermissionName, PermissionCode, Description, Type, ParentID, Path)
+VALUES (N'系统管理', 'system:manage', N'系统管理模块', N'菜单', NULL, '/system')
 GO
 
--- 插入测试成绩数据
-IF NOT EXISTS (SELECT * FROM Scores)
-BEGIN
-    DECLARE @ExamTime BIGINT
-    SET @ExamTime = DATEDIFF(SECOND, '1970-01-01', '2023-12-20')
-    
-    -- 为学生添加语文成绩
-    INSERT INTO Scores (StudentID, CourseID, Score, ExamTime) 
-    VALUES (1, 1, 88.5, @ExamTime);
-    
-    INSERT INTO Scores (StudentID, CourseID, Score, ExamTime) 
-    VALUES (2, 1, 92.0, @ExamTime);
-    
-    -- ... 继续插入其他成绩数据 ...
-END
+INSERT INTO Permissions (PermissionName, PermissionCode, Description, Type, ParentID, Path)
+VALUES (N'用户管理', 'user:manage', N'用户管理功能', N'菜单', 1, '/system/user')
 GO

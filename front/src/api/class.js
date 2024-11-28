@@ -13,7 +13,7 @@ export function getClassList(params) {
 export function createClass(data) {
   return request({
     url: '/api/classes',
-    method: 'post',
+    method: 'get',
     data
   })
 }
