@@ -15,6 +15,7 @@
         :background-color="'#fff'"
         :text-color="'#303133'"
         :active-text-color="'#409EFF'"
+        @select="handleMenuClick"
       >
         <el-menu-item index="/dashboard">
           <el-icon><DataLine /></el-icon>
@@ -29,16 +30,6 @@
         <el-menu-item index="/class">
           <el-icon><Collection /></el-icon>
           <template #title>班级管理</template>
-        </el-menu-item>
-
-        <el-menu-item index="/dashboard/attendance">
-          <el-icon><Calendar /></el-icon>
-          <template #title>考勤管理</template>
-        </el-menu-item>
-
-        <el-menu-item index="/dashboard/grades">
-          <el-icon><Document /></el-icon>
-          <template #title>成绩管理</template>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -87,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import {
@@ -139,6 +130,16 @@ const handleCommand = async (command) => {
       router.push('/settings')
       break
   }
+}
+
+// 添加路由变化监听
+watch(() => route.path, (newPath) => {
+  console.log('路由变化:', newPath)
+})
+
+// 添加菜单点击事件处理
+const handleMenuClick = (index) => {
+  console.log('菜单点击:', index)
 }
 </script>
 

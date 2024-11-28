@@ -3,16 +3,16 @@ import request from '@/utils/request'
 // 获取学生列表
 export function getStudentList(params) {
   return request({
-    url: '/students',
+    url: '/api/students',
     method: 'get',
     params
   })
 }
 
-// 添加学生
-export function addStudent(data) {
+// 创建学生
+export function createStudent(data) {
   return request({
-    url: '/students',
+    url: '/api/students',
     method: 'post',
     data
   })
@@ -21,7 +21,7 @@ export function addStudent(data) {
 // 更新学生
 export function updateStudent(id, data) {
   return request({
-    url: `/students/${id}`,
+    url: `/api/students/${id}`,
     method: 'put',
     data
   })
@@ -30,7 +30,7 @@ export function updateStudent(id, data) {
 // 删除学生
 export function deleteStudent(id) {
   return request({
-    url: `/students/${id}`,
+    url: `/api/students/${id}`,
     method: 'delete'
   })
 } 

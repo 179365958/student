@@ -4,8 +4,9 @@ const { connectDB } = require('../config/db');
 
 // 获取仪表盘统计数据
 router.get('/stats', async (req, res) => {
+  let pool;
   try {
-    const pool = await connectDB();
+    pool = await connectDB();
     
     // 使用一个查询获取所有统计数据
     const result = await pool.request().query(`
@@ -29,9 +30,17 @@ router.get('/stats', async (req, res) => {
     console.error('获取仪表盘统计失败:', error);
     res.status(500).json({
       success: false,
-      message: '获取统计数据失败'
+      message: error.message || '获取统计数据失败'
     });
   }
+});
+
+// 添加测试路由
+router.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Dashboard service is running'
+  });
 });
 
 module.exports = router;

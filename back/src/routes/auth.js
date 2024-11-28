@@ -29,4 +29,12 @@ router.post('/login', async (req, res) => {
   }
 })
 
+// 添加测试路由
+router.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Auth service is running'
+  });
+});
+
 module.exports = router 

@@ -188,14 +188,29 @@ const rules = {
 const getStudents = async () => {
   loading.value = true
   try {
+    console.log('请求参数:', {
+      page: currentPage.value,
+      pageSize: pageSize.value,
+      query: searchQuery.value
+    })
+    
     const res = await getStudentList({
       page: currentPage.value,
       pageSize: pageSize.value,
       query: searchQuery.value
     })
-    if (res.data) {
-      studentList.value = Array.isArray(res.data.list) ? res.data.list : []
-      total.value = res.data.total || 0
+    
+    console.log('学生列表响应:', res)  // 添加这行日志
+    
+    if (res.success) {
+      studentList.value = res.data.rows
+      total.value = res.data.count
+      console.log('处理后的数据:', {
+        list: studentList.value,
+        total: total.value
+      })
+    } else {
+      ElMessage.error(res.message || '获取学生列表失败')
     }
   } catch (error) {
     console.error('获取学生列表失败:', error)

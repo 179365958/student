@@ -11,41 +11,26 @@ export const routes = [
   },
   {
     path: '/',
-    redirect: '/dashboard'
-  },
-  {
-    path: '/dashboard',
     component: Layout,
+    redirect: '/dashboard',
     children: [
       {
-        path: '',
+        path: 'dashboard',
         name: 'Dashboard',
         component: () => import('@/views/dashboard/Dashboard.vue'),
         meta: { title: '仪表盘' }
-      }
-    ]
-  },
-  {
-    path: '/class',
-    component: Layout,
-    children: [
+      },
       {
-        path: '',
-        name: 'Class',
-        component: () => import('@/views/class/Class.vue'),
-        meta: { title: '班级管理' }
-      }
-    ]
-  },
-  {
-    path: '/student',
-    component: Layout,
-    children: [
-      {
-        path: '',
+        path: 'student',
         name: 'Student',
         component: () => import('@/views/student/Student.vue'),
         meta: { title: '学生管理' }
+      },
+      {
+        path: 'class',
+        name: 'Class',
+        component: () => import('@/views/class/Class.vue'),
+        meta: { title: '班级管理' }
       }
     ]
   }

@@ -20,6 +20,20 @@ app.use(cors({
 }))
 app.use(express.json())
 
+// 添加测试路由
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Server is running',
+    time: new Date().toISOString(),
+    routes: {
+      auth: '/api/auth/*',
+      students: '/api/students/*',
+      classes: '/api/classes/*',
+      dashboard: '/api/dashboard/*'
+    }
+  })
+})
+
 // 路由
 app.use('/api/auth', authRouter)
 app.use('/api/students', studentsRouter)
@@ -38,7 +52,18 @@ app.use((err, req, res, next) => {
 // 启动服务
 const PORT = process.env.PORT || 3000
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on port ${PORT}`)
+  console.log(`
+====================================
+  Server is running
+  - Port: ${PORT}
+  - Time: ${new Date().toISOString()}
+  - Routes:
+    * /api/auth/*
+    * /api/students/*
+    * /api/classes/*
+    * /api/dashboard/*
+====================================
+  `)
 })
 
 module.exports = app
