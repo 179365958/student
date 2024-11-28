@@ -4,7 +4,7 @@ const config = {
   user: process.env.DB_USER || 'sa',
   password: process.env.DB_PASSWORD,
   server: process.env.DB_SERVER || 'localhost',
-  database: 'master',
+  database: 'StudentDB',
   options: {
     encrypt: false,
     trustServerCertificate: true,

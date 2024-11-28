@@ -98,53 +98,28 @@ const handleLogin = async () => {
     if (valid) {
       loading.value = true
       try {
-        // 首先检查数据库状态
-        const dbStatus = await checkDbStatus()
+        const res = await login({
+          username: loginForm.value.username,
+          password: loginForm.value.password
+        })
         
-        if (!dbStatus.exists) {
-          // 如果数据库不存在，提示用户
-          const result = await ElMessageBox.confirm(
-            '数据库未初始化，是否跳转到初始化页面？',
-            '提示',
-            {
-              confirmButtonText: '确定',
-              cancelButtonText: '取消',
-              type: 'warning'
-            }
-          )
-          
-          if (result === 'confirm') {
-            router.push('/init/db')
-            return
-          }
-          return
-        }
-        
-        // 数据库存在，继续登录流程
-        const res = await login(loginForm.value)
         if (res.success) {
-          // 传入记住密码的状态
-          userStore.setUserInfo({
-            ...res.data,
-            remember: loginForm.value.remember
-          })
-          
-          // 如果选择记住密码，保存到本地存储
+          // 处理记住密码
           if (loginForm.value.remember) {
-            localStorage.setItem('remembered_username', loginForm.value.username)
-            localStorage.setItem('remembered_password', btoa(loginForm.value.password))
-            localStorage.setItem('rememberPassword', 'true')
+            localStorage.setItem('savedUser', JSON.stringify({
+              username: loginForm.value.username,
+              password: loginForm.value.password
+            }))
           } else {
-            localStorage.removeItem('remembered_username')
-            localStorage.removeItem('remembered_password')
-            localStorage.removeItem('rememberPassword')
+            localStorage.removeItem('savedUser')
           }
           
+          userStore.setUserInfo(res.data)
           ElMessage.success('登录成功')
-          router.push('/dashboard')
+          router.push('/')
         }
       } catch (error) {
-        ElMessage.error(error.message || '登录失败')
+        console.error('登录失败:', error)
       } finally {
         loading.value = false
       }
@@ -154,19 +129,12 @@ const handleLogin = async () => {
 
 // 检查是否有记住的登录信息
 onMounted(() => {
-  const rememberedUsername = localStorage.getItem('remembered_username')
-  const rememberedPassword = localStorage.getItem('remembered_password')
-  const rememberPassword = localStorage.getItem('rememberPassword')
-  
-  if (rememberedUsername && rememberedPassword && rememberPassword === 'true') {
-    loginForm.value.username = rememberedUsername
-    loginForm.value.password = atob(rememberedPassword)
+  const savedUser = localStorage.getItem('savedUser')
+  if (savedUser) {
+    const { username, password } = JSON.parse(savedUser)
+    loginForm.value.username = username
+    loginForm.value.password = password
     loginForm.value.remember = true
-  } else {
-    // 如果没有记住的登录信息，确保重置表单
-    loginForm.value.username = ''
-    loginForm.value.password = ''
-    loginForm.value.remember = false
   }
 })
 
