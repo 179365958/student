@@ -1,7 +1,6 @@
 <template>
   <div class="dashboard">
     <el-row :gutter="20">
-      <!-- 统计卡片 -->
       <el-col :span="6" v-for="card in statisticsCards" :key="card.title">
         <el-card class="statistics-card" :body-style="{ padding: '20px' }">
           <div class="card-content">
@@ -16,41 +15,63 @@
         </el-card>
       </el-col>
     </el-row>
-
-    <!-- 其他仪表盘内容 -->
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { User, School, Calendar, Document } from '@element-plus/icons-vue'
+import { getDashboardStats } from '@/api/dashboard'
+import { ElMessage } from 'element-plus'
 
 const statisticsCards = ref([
   {
     title: '学生总数',
-    value: '1,234',
+    value: '0',
     icon: 'User',
     type: 'primary'
   },
   {
     title: '班级总数',
-    value: '32',
+    value: '0',
     icon: 'School',
     type: 'success'
   },
   {
     title: '今日考勤',
-    value: '98%',
+    value: '0%',
     icon: 'Calendar',
     type: 'warning'
   },
   {
     title: '待处理事项',
-    value: '12',
+    value: '0',
     icon: 'Document',
     type: 'danger'
   }
 ])
+
+// 获取统计数据
+const fetchStats = async () => {
+  try {
+    const res = await getDashboardStats()
+    if (res.success) {
+      const { studentCount, classCount, attendanceRate, todoCount } = res.data
+      statisticsCards.value[0].value = studentCount.toString()
+      statisticsCards.value[1].value = classCount.toString()
+      statisticsCards.value[2].value = `${attendanceRate}%`
+      statisticsCards.value[3].value = todoCount.toString()
+    }
+  } catch (error) {
+    console.error('获取统计数据失败:', error)
+    ElMessage.error('获取统计数据失败')
+  }
+}
+
+// 页面加载时获取数据
+onMounted(() => {
+  fetchStats()
+})
 </script>
 
 <style scoped>

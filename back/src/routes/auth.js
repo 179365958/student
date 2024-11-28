@@ -5,18 +5,14 @@ const authController = require('../controllers/authController')
 // 登录路由
 router.post('/login', async (req, res) => {
   try {
-    // 暂时硬编码一个测试账号
     const { username, password } = req.body
     if (username === 'admin' && password === '123456') {
       res.json({
         success: true,
         data: {
           token: 'test-token',
-          user: {
-            id: 1,
-            username: 'admin',
-            name: '管理员'
-          }
+          username: 'admin',
+          name: '管理员'
         }
       })
     } else {

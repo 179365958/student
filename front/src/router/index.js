@@ -1,72 +1,83 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '../stores/user' // 添加用户状态管理导入
+import Layout from '@/components/layout/index.vue'
+import { useUserStore } from '@/stores/user'
 
-// 定义应用的路由配置
-const routes = [
+export const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../views/login/Login.vue'),
-    meta: {
-      title: '学生管理系统 - 登录'
-    }
+    component: () => import('@/views/login/Login.vue'),
+    meta: { title: '登录' }
   },
   {
     path: '/',
-    component: () => import('../components/layout/index.vue'),
-    redirect: '/dashboard',
+    redirect: '/dashboard'
+  },
+  {
+    path: '/dashboard',
+    component: Layout,
     children: [
       {
-        path: 'dashboard',
+        path: '',
         name: 'Dashboard',
-        component: () => import('../views/dashboard/Dashboard.vue'),
-        meta: { title: '首页', icon: 'dashboard' }
-      },
-      {
-        path: 'student',
-        name: 'Student',
-        component: () => import('../views/student/Student.vue'),
-        meta: { title: '学生管理', icon: 'user' }
-      },
-      {
-        path: 'class',
-        name: 'Class',
-        component: () => import('../views/class/Class.vue'),
-        meta: { title: '班级管理', icon: 'collection' }
+        component: () => import('@/views/dashboard/Dashboard.vue'),
+        meta: { title: '仪表盘' }
       }
     ]
   },
   {
-    path: '/init/db',
-    name: 'DbInit',
-    component: () => import('@/views/init/DbInit.vue'),
-    meta: {
-      title: '数据库初始化'
-    }
+    path: '/class',
+    component: Layout,
+    children: [
+      {
+        path: '',
+        name: 'Class',
+        component: () => import('@/views/class/Class.vue'),
+        meta: { title: '班级管理' }
+      }
+    ]
+  },
+  {
+    path: '/student',
+    component: Layout,
+    children: [
+      {
+        path: '',
+        name: 'Student',
+        component: () => import('@/views/student/Student.vue'),
+        meta: { title: '学生管理' }
+      }
+    ]
   }
 ]
 
-// 创建路由器实例
 const router = createRouter({
   history: createWebHistory(),
   routes
 })
 
-// 增强的路由守卫
+// 路由守卫
 router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
   const userStore = useUserStore()
-  console.log('当前路由配置：', router.getRoutes())
   
-  // 设置页面标题
-  document.title = to.meta.title || '学生管理系统'
+  // 如果有 token 但没有用户信息，尝试恢复用户信息
+  if (token && !userStore.userInfo) {
+    userStore.initUserInfo()
+  }
   
-  // 检查是否需要登录权限
-  if (to.path !== '/login' && to.path !== '/init/db') {
-    // 如果用户未登录，重定向到登录页面
-    if (!userStore.isAuthenticated) {
-      next('/login')
-      return
+  if (to.path === '/login') {
+    if (token) {
+      next('/dashboard')
+    } else {
+      next()
     }
+    return
+  }
+  
+  if (!token) {
+    next('/login')
+    return
   }
   
   next()

@@ -64,7 +64,7 @@
         <div class="header-right">
           <el-dropdown @command="handleCommand">
             <span class="user-dropdown">
-              {{ userStore.userInfo?.username || '未知用户' }}
+              {{ username }}
               <el-icon class="el-icon--right"><arrow-down /></el-icon>
             </span>
             <template #dropdown>
@@ -107,7 +107,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const isCollapse = ref(false)
 
-// 可以添加一个计算属性来获取用户名
+// 获取用户名的计算属性
 const username = computed(() => {
   return userStore.userInfo?.username || '未知用户'
 })
@@ -133,10 +133,10 @@ const handleCommand = async (command) => {
       }
       break
     case 'profile':
-      router.push('/dashboard/profile')
+      router.push('/profile')
       break
     case 'settings':
-      router.push('/dashboard/settings')
+      router.push('/settings')
       break
   }
 }

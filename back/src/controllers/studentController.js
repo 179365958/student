@@ -1,25 +1,37 @@
-const Student = require('../models/student');
+const Student = require('../models/Student');
+const Class = require('../models/Class');
 
 // 获取学生列表
 exports.getStudents = async (req, res) => {
   try {
-    const { page = 1, pageSize = 10 } = req.query;
-    const skip = (page - 1) * pageSize;
+    const { page = 1, pageSize = 10, query = '' } = req.query;
+    const offset = (page - 1) * pageSize;
     
-    // 直接在控制器中查询数据库
-    const list = await Student.find()
-      .skip(skip)
-      .limit(Number(pageSize));
-    const total = await Student.countDocuments();
-    
+    console.log('查询参数:', { page, pageSize, query, offset });
+
+    const result = await Student.findAndCountAll({
+      offset,
+      limit: parseInt(pageSize),
+      where: { query }
+    });
+
+    console.log('查询结果:', result);
+
+    // 获取班级列表（用于下拉选择）
+    const classResult = await Class.findAndCountAll({
+      offset: 0,
+      limit: 1000  // 获取所有班级
+    });
+
     res.json({
       success: true,
       data: {
-        list,
-        total
+        ...result,
+        classes: classResult.rows
       }
     });
   } catch (error) {
+    console.error('获取学生列表失败:', error);
     res.status(500).json({
       success: false,
       message: error.message || '获取学生列表失败'

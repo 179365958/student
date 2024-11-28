@@ -1,42 +1,43 @@
 require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
-const routes = require('./routes')
+const authRouter = require('./routes/auth')
+const studentsRouter = require('./routes/students')
+const classesRouter = require('./routes/classes')
+const dashboardRouter = require('./routes/dashboard')
 
 const app = express()
 
-// 禁用 punycode 警告
-process.removeAllListeners('warning')
-
 // 中间件
-app.use(cors())
+app.use(cors({
+  origin: function(origin, callback) {
+    // 允许所有来源，生产环境建议配置具体的域名
+    callback(null, true)
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
 app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
 
-// 根路由
-app.get('/', (req, res) => {
-  res.json({
-    code: 200,
-    message: 'Welcome to Student Management System API',
-    version: '1.0.0'
-  })
-})
+// 路由
+app.use('/api/auth', authRouter)
+app.use('/api/students', studentsRouter)
+app.use('/api/classes', classesRouter)
+app.use('/api/dashboard', dashboardRouter)
 
-// API路由
-app.use(routes)
-
-// 错误处理
+// 错误处理中间件
 app.use((err, req, res, next) => {
-  console.error(err.stack)
+  console.error('服务器错误:', err)
   res.status(500).json({
-    code: 500,
-    message: '服务器内部错误'
+    success: false,
+    message: err.message || '服务器内部错误'
   })
 })
 
-//const HOST = '0.0.0.0'  // 修改为监听所有网络接口，而不是默认的 localhost
+// 启动服务
 const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`)
 })
 

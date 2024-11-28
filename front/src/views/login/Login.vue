@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { User, Lock, Setting } from '@element-plus/icons-vue'
@@ -104,6 +104,8 @@ const handleLogin = async () => {
         })
         
         if (res.success) {
+          console.log('登录响应数据:', res.data)
+          
           // 处理记住密码
           if (loginForm.value.remember) {
             localStorage.setItem('savedUser', JSON.stringify({
@@ -115,11 +117,14 @@ const handleLogin = async () => {
           }
           
           userStore.setUserInfo(res.data)
+          console.log('保存后的用户信息:', userStore.userInfo)
+          
           ElMessage.success('登录成功')
-          router.push('/')
+          await router.push('/dashboard')
         }
       } catch (error) {
         console.error('登录失败:', error)
+        ElMessage.error(error.message || '登录失败，请稍后重试')
       } finally {
         loading.value = false
       }

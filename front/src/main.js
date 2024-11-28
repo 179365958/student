@@ -5,22 +5,43 @@ import 'element-plus/dist/index.css'
 import App from './App.vue'
 import router from './router'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-import { useUserStore } from './stores/user' // 引入用户状态管理
 
-const app = createApp(App) // 创建 Vue 应用实例
-const pinia = createPinia() // 创建 Pinia 实例用于状态管理
+// 创建应用实例
+const app = createApp(App)
+
+// 创建并使用 Pinia
+const pinia = createPinia()
+app.use(pinia)
 
 // 注册所有图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component) // 将每个图标组件注册到应用中
+  app.component(key, component)
 }
 
-app.use(pinia) // 使用 Pinia 插件
+// 使用路由和 Element Plus
+app.use(router)
+app.use(ElementPlus)
 
-const userStore = useUserStore() // 获取用户状态管理实例
-userStore.checkAuth() // 在应用启动时检查用户认证状态
+// 挂载应用
+app.mount('#app')
 
-app.use(router) // 使用路由插件
-app.use(ElementPlus) // 使用 Element Plus UI 组件库
-
-app.mount('#app') // 挂载应用到 DOM 中的 #app 元素
+// 初始化检查可以移到路由守卫中
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+  
+  if (to.path === '/login') {
+    if (token) {
+      next('/dashboard')
+    } else {
+      next()
+    }
+    return
+  }
+  
+  if (!token) {
+    next('/login')
+    return
+  }
+  
+  next()
+})
