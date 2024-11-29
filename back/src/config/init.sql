@@ -118,16 +118,84 @@ CREATE TABLE Students (
 GO
 
 -- 插入学生测试数据
-INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-VALUES ('S001', N'张三', N'男', 2015, 1, '13800000001', N'北京市朝阳区', N'在读')
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S001', N'张三', N'男', 2015, 1, '13800000001', N'北京市朝阳区望京街道', N'在读')
 GO
 
-INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-VALUES ('S002', N'李四', N'女', 2015, 1, '13800000002', N'北京市海淀区', N'在读')
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S002', N'李四', N'女', 2015, 1, '13800000002', N'北京市海淀区中关村街道', N'在读')
 GO
 
-INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) 
-VALUES ('S003', N'王五', N'男', 2015, 1, '13800000003', N'北京市西城区', N'在读')
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S003', N'王五', N'男', 2015, 2, '13800000003', N'北京市西城区西单街道', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S004', N'赵六', N'女', 2015, 2, '13800000004', N'北京市东城区东直门街道', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S005', N'孙七', N'男', 2014, 3, '13800000005', N'北京市丰台区方庄街道', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S006', N'周八', N'女', 2014, 3, '13800000006', N'北京市石景山区八角街道', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S007', N'吴九', N'男', 2014, 4, '13800000007', N'北京市通州区梨园街道', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S008', N'郑十', N'女', 2014, 4, '13800000008', N'北京市大兴区亦庄街道', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S009', N'刘一', N'男', 2013, 5, '13800000009', N'北京市昌平区回龙观街道', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S010', N'陈二', N'女', 2013, 5, '13800000010', N'北京市顺义区后沙峪街道', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S011', N'杨晓明', N'男', 2015, 1, '13800000011', N'北京市朝阳区三里屯街道', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S012', N'王丽丽', N'女', 2015, 1, '13800000012', N'北京市海淀区五道口街道', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S013', N'李明明', N'男', 2015, 2, '13800000013', N'北京市西城区金融街', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S014', N'张婷婷', N'女', 2015, 2, '13800000014', N'北京市东城区王府井', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S015', N'刘强', N'男', 2014, 3, '13800000015', N'北京市丰台区花乡街道', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S016', N'周梅', N'女', 2014, 3, '13800000016', N'北京市石景山区古城街道', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S017', N'吴涛', N'男', 2014, 4, '13800000017', N'北京市通州区新华街道', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S018', N'郑雪', N'女', 2014, 4, '13800000018', N'北京市大兴区黄村街道', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S019', N'马超', N'男', 2013, 5, '13800000019', N'北京市昌平区天通苑', N'在读')
+GO
+
+INSERT INTO Students (StudentNo, Name, Gender, BirthYear, ClassID, Phone, Address, Status) VALUES 
+('S020', N'韩雪', N'女', 2013, 5, '13800000020', N'北京市顺义区空港街道', N'在读')
 GO
 
 -- ... 继续插入其他学生数据 ...

@@ -35,9 +35,9 @@ start "前端服务" cmd /c "cd front && npm run dev"
 timeout /t 3 > nul
 
 :: 打开浏览器
-echo.
-echo 正在打开浏览器...
-start http://localhost:8080
+::echo.
+::echo 正在打开浏览器...
+::start http://localhost:8080
 
 echo.
 echo 所有服务已启动:

@@ -5,10 +5,13 @@ import 'element-plus/dist/index.css'
 import App from './App.vue'
 import router from './router'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 
 // 创建应用实例
 const app = createApp(App)
-
+app.use(ElementPlus, {
+  locale: zhCn,
+})
 // 创建并使用 Pinia
 const pinia = createPinia()
 app.use(pinia)
