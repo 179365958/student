@@ -7,14 +7,11 @@ class AuthController {
   async login(req, res) {
     try {
       const { username, password } = req.body;
-      console.log('Login attempt for username:', username);
 
       // 验证用户
       const user = await User.findByUsername(username);
-      console.log('User found:', user ? 'Yes' : 'No');
       
       if (!user) {
-        console.log('User not found');
         return res.status(401).json({
           success: false,
           message: '用户名或密码错误'
@@ -22,12 +19,9 @@ class AuthController {
       }
 
       // 验证密码
-      console.log('Verifying password...');
       const isValidPassword = await User.verifyPassword(password, user.Password);
-      console.log('Password valid:', isValidPassword ? 'Yes' : 'No');
       
       if (!isValidPassword) {
-        console.log('Invalid password');
         return res.status(401).json({
           success: false,
           message: '用户名或密码错误'
@@ -35,7 +29,6 @@ class AuthController {
       }
 
       // 生成 JWT token
-      console.log('Generating JWT token...');
       const token = jwt.sign(
         { 
           id: user.UserID,
@@ -46,19 +39,20 @@ class AuthController {
         { expiresIn: JWT_EXPIRES_IN }
       );
 
-      console.log('Login successful');
       res.json({
         success: true,
+        message: '登录成功',
         data: {
           token,
-          username: user.Username,
-          name: user.Name,
-          role: user.Role
+          user: {
+            id: user.UserID,
+            username: user.Username,
+            role: user.Role
+          }
         }
       });
     } catch (error) {
-      console.error('登录错误:', error);
-      console.error('Error stack:', error.stack);
+      console.error('Login error:', error);
       res.status(500).json({
         success: false,
         message: '登录失败: ' + error.message

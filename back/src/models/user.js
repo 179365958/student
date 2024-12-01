@@ -30,11 +30,7 @@ class User {
   }
 
   static async verifyPassword(plainPassword, hashedPassword) {
-    console.log('Plain password:', plainPassword);
-    console.log('Hashed password from DB:', hashedPassword);
-    const result = await bcrypt.compare(plainPassword, hashedPassword);
-    console.log('Password comparison result:', result);
-    return result;
+    return await bcrypt.compare(plainPassword, hashedPassword);
   }
 
   static async changePassword(userId, newPassword) {
