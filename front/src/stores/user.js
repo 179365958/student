@@ -1,49 +1,58 @@
 import { defineStore } from 'pinia'
+import { login as loginApi, getUserInfo as getUserInfoApi } from '@/api/auth'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
     userInfo: null,
-    token: null,
-    savedUser: null
+    token: localStorage.getItem('token') || null,
   }),
+
   getters: {
-    username: (state) => state.userInfo?.username || '未知用户'
+    isLoggedIn: (state) => !!state.token,
+    username: (state) => state.userInfo?.username || '未知用户',
+    userRole: (state) => state.userInfo?.role || 'guest'
   },
+
   actions: {
-    setUserInfo(data) {
-      this.userInfo = data
-      this.token = data.token
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('userInfo', JSON.stringify(data))
-    },
-    initUserInfo() {
-      const userInfo = localStorage.getItem('userInfo')
-      if (userInfo) {
-        this.userInfo = JSON.parse(userInfo)
-        this.token = this.userInfo.token
+    async login(username, password) {
+      try {
+        const res = await loginApi({ username, password })
+        const { token, ...userInfo } = res.data
+        this.setToken(token)
+        this.setUserInfo(userInfo)
+        return res
+      } catch (error) {
+        this.clearAuth()
+        throw error
       }
     },
-    setSavedUser(username, password) {
-      this.savedUser = { username, password }
-      localStorage.setItem('savedUser', JSON.stringify({ username, password }))
-    },
-    getSavedUser() {
-      const savedUser = localStorage.getItem('savedUser')
-      if (savedUser) {
-        this.savedUser = JSON.parse(savedUser)
-        return this.savedUser
+
+    async initUserInfo() {
+      if (!this.token) return null
+      
+      try {
+        const res = await getUserInfoApi()
+        this.setUserInfo(res.data)
+        return res.data
+      } catch (error) {
+        this.clearAuth()
+        throw error
       }
-      return null
     },
-    clearSavedUser() {
-      this.savedUser = null
-      localStorage.removeItem('savedUser')
+
+    setToken(token) {
+      this.token = token
+      localStorage.setItem('token', token)
     },
+
+    setUserInfo(userInfo) {
+      this.userInfo = userInfo
+    },
+
     clearAuth() {
-      this.userInfo = null
       this.token = null
+      this.userInfo = null
       localStorage.removeItem('token')
-      localStorage.removeItem('userInfo')
     }
   }
-}) 
+})

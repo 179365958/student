@@ -10,13 +10,12 @@ const app = express()
 
 // 中间件
 app.use(cors({
-  origin: function(origin, callback) {
-    // 允许所有来源，生产环境建议配置具体的域名
-    callback(null, true)
-  },
+  origin: ['http://localhost:8080', 'http://127.0.0.1:8080'], // 允许多个域名访问
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Authorization'],
+  maxAge: 86400 // 预检请求缓存24小时
 }))
 app.use(express.json())
 

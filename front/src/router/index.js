@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '@/components/layout/index.vue'
 import { useUserStore } from '@/stores/user'
+import { ElMessage } from 'element-plus' // Add this line
 
 export const routes = [
   {
@@ -24,13 +25,13 @@ export const routes = [
         path: 'student',
         name: 'Student',
         component: () => import('@/views/student/Student.vue'),
-        meta: { title: '学生管理' }
+        meta: { title: '学生管理', roles: ['admin', 'teacher'] } // Add roles meta
       },
       {
         path: 'class',
         name: 'Class',
         component: () => import('@/views/class/Class.vue'),
-        meta: { title: '班级管理' }
+        meta: { title: '班级管理', roles: ['admin', 'teacher'] } // Add roles meta
       }
     ]
   }
@@ -42,17 +43,15 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
+router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
   
-  // 如果有 token 但没有用户信息，尝试恢复用户信息
-  if (token && !userStore.userInfo) {
-    userStore.initUserInfo()
-  }
+  // 设置页面标题
+  document.title = to.meta.title ? `${to.meta.title} - 学生管理系统` : '学生管理系统'
   
+  // 如果是登录页
   if (to.path === '/login') {
-    if (token) {
+    if (userStore.isLoggedIn) {
       next('/dashboard')
     } else {
       next()
@@ -60,12 +59,30 @@ router.beforeEach((to, from, next) => {
     return
   }
   
-  if (!token) {
+  // 如果没有登录
+  if (!userStore.isLoggedIn) {
     next('/login')
+    return
+  }
+  
+  // 如果已登录但没有用户信息，尝试获取用户信息
+  if (!userStore.userInfo) {
+    try {
+      await userStore.initUserInfo()
+    } catch (error) {
+      next('/login')
+      return
+    }
+  }
+  
+  // 检查路由权限
+  if (to.meta.roles && !to.meta.roles.includes(userStore.userRole)) {
+    ElMessage.error('无权限访问该页面')
+    next(from.path)
     return
   }
   
   next()
 })
 
-export default router 
+export default router

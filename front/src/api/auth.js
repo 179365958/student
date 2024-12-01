@@ -25,6 +25,15 @@ export function getUserInfo() {
   })
 }
 
+// 修改密码
+export function changePassword(data) {
+  return request({
+    url: '/api/auth/change-password',
+    method: 'post',
+    data
+  })
+}
+
 // 检查数据库状态
 export function checkDbStatus() {
   return request({
@@ -48,4 +57,4 @@ export function initializeDb() {
     url: '/api/db/initialize',
     method: 'post'
   })
-} 
+}

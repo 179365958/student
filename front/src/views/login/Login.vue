@@ -33,8 +33,8 @@
         </el-form-item>
         <el-form-item>
           <div class="remember-row">
-            <el-checkbox v-model="loginForm.remember">记住密码</el-checkbox>
-            <el-link type="primary">忘记密码？</el-link>
+            <el-checkbox v-model="loginForm.remember">记住账号</el-checkbox>
+            <el-link type="primary" @click="showChangePassword">忘记密码？</el-link>
           </div>
         </el-form-item>
         <el-form-item>
@@ -49,34 +49,37 @@
           </el-button>
         </el-form-item>
       </el-form>
-      <div class="link-container">
-        <el-link type="primary" @click="goToInit">
-          <el-icon class="link-icon"><Setting /></el-icon>
-          初始化数据库
-        </el-link>
-      </div>
     </el-card>
   </div>
+
+  <!-- 修改密码对话框 -->
+  <ChangePassword ref="changePasswordRef" />
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { User, Lock, Setting } from '@element-plus/icons-vue'
-import { login, checkDbStatus } from '@/api/auth'  // 需要创建这个API
-import { useUserStore } from '@/stores/user'  // 需要创建这个store
+import { ElMessage } from 'element-plus'
+import { User, Lock } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
+import ChangePassword from '@/components/ChangePassword.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
 const loginFormRef = ref(null)
 const loading = ref(false)
+const changePasswordRef = ref(null)
 
 const loginForm = ref({
   username: '',
   password: '',
   remember: false
 })
+
+// 显示修改密码对话框
+const showChangePassword = () => {
+  changePasswordRef.value?.show()
+}
 
 // 表单验证规则
 const rules = {
@@ -94,83 +97,51 @@ const rules = {
 const handleLogin = async () => {
   if (!loginFormRef.value) return
   
-  await loginFormRef.value.validate(async (valid) => {
-    if (valid) {
-      loading.value = true
-      try {
-        const res = await login({
-          username: loginForm.value.username,
-          password: loginForm.value.password
-        })
-        
-        if (res.success) {
-          console.log('登录响应数据:', res.data)
-          
-          // 处理记住密码
-          if (loginForm.value.remember) {
-            localStorage.setItem('savedUser', JSON.stringify({
-              username: loginForm.value.username,
-              password: loginForm.value.password
-            }))
-          } else {
-            localStorage.removeItem('savedUser')
-          }
-          
-          userStore.setUserInfo(res.data)
-          console.log('保存后的用户信息:', userStore.userInfo)
-          
-          ElMessage.success('登录成功')
-          await router.push('/dashboard')
-        }
-      } catch (error) {
-        console.error('登录失败:', error)
-        ElMessage.error(error.message || '登录失败，请稍后重试')
-      } finally {
-        loading.value = false
-      }
+  try {
+    await loginFormRef.value.validate()
+    loading.value = true
+    console.log('Attempting login with:', { username: loginForm.value.username })
+    
+    await userStore.login(loginForm.value.username, loginForm.value.password)
+    
+    // 如果选择记住账号，保存用户名
+    if (loginForm.value.remember) {
+      localStorage.setItem('rememberedUsername', loginForm.value.username)
+    } else {
+      localStorage.removeItem('rememberedUsername')
     }
-  })
+    
+    ElMessage.success('登录成功')
+    await router.push('/')
+  } catch (error) {
+    console.error('Login failed:', error)
+    ElMessage.error(error.response?.data?.message || '登录失败，请检查用户名和密码')
+  } finally {
+    loading.value = false
+  }
 }
 
-// 检查是否有记住的登录信息
+// 检查是否有记住的用户名
 onMounted(() => {
-  const savedUser = localStorage.getItem('savedUser')
-  if (savedUser) {
-    const { username, password } = JSON.parse(savedUser)
-    loginForm.value.username = username
-    loginForm.value.password = password
+  const rememberedUsername = localStorage.getItem('rememberedUsername')
+  if (rememberedUsername) {
+    loginForm.value.username = rememberedUsername
     loginForm.value.remember = true
   }
 })
-
-// 修改初始化方法
-const goToInit = () => {
-  console.log('点击初始化按钮')
-  router.push('/init/db')
-}
 </script>
 
 <style scoped>
 .login {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: none;
+  background-color: #f5f7fa;
 }
 
 .login-card {
-  width: 380px;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  transition: transform 0.3s ease;
-}
-
-.login-card:hover {
-  transform: translateY(-5px);
+  width: 400px;
 }
 
 .login-header {
@@ -181,12 +152,11 @@ const goToInit = () => {
 .login-header h2 {
   margin: 0;
   font-size: 24px;
-  color: #2c3e50;
-  font-weight: 600;
+  color: #303133;
 }
 
 .subtitle {
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   font-size: 14px;
   color: #909399;
 }
@@ -195,67 +165,13 @@ const goToInit = () => {
   margin-top: 20px;
 }
 
-.login-form :deep(.el-form-item) {
-  margin-bottom: 20px;
-}
-
-.login-form :deep(.el-input__wrapper) {
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-  border-radius: 8px;
-}
-
-.login-form :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-
-.login-button {
-  width: 100%;
-  height: 44px;
-  font-size: 16px;
-  font-weight: 500;
-  letter-spacing: 1px;
-  background: linear-gradient(135deg, #409EFF 0%, #79bbff 100%);
-  border: none;
-  margin-top: 10px;
-}
-
-.login-button:hover {
-  background: linear-gradient(135deg, #66b1ff 0%, #8cc5ff 100%);
-  transform: translateY(-1px);
-}
-
-.link-container {
-  margin-top: 20px;
-  text-align: center;
-}
-
-.link-container .el-link {
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.link-icon {
-  font-size: 16px;
-}
-
-/* 添加响应式设计 */
-@media (max-width: 480px) {
-  .login-card {
-    width: 90%;
-    padding: 20px;
-  }
-}
-
 .remember-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
 }
 
-.login-form :deep(.el-checkbox__label) {
-  color: #606266;
+.login-button {
+  width: 100%;
 }
-</style> 
+</style>

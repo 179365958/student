@@ -200,6 +200,48 @@ GO
 
 -- ... 继续插入其他学生数据 ...
 
+-- 删除触发器
+IF EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[dbo].[TR_Users_UpdateTime]'))
+BEGIN
+    DROP TRIGGER [dbo].[TR_Users_UpdateTime]
+END
+GO
+
+-- 创建用户表
+CREATE TABLE [dbo].[Users] (
+    [UserID] [int] IDENTITY(1,1) NOT NULL,
+    [Username] [nvarchar](50) NOT NULL,
+    [Password] [nvarchar](100) NOT NULL,          -- 存储 bcrypt 哈希
+    [RealName] [nvarchar](100) NOT NULL,
+    [Role] [nvarchar](20) NOT NULL CONSTRAINT [DF_Users_Role] DEFAULT ('user'),
+    [Status] [bit] NOT NULL CONSTRAINT [DF_Users_Status] DEFAULT (1),
+    [LastLoginTime] [bigint] NULL,
+    [CreateTime] [bigint] NOT NULL CONSTRAINT [DF_Users_CreateTime] DEFAULT (DATEDIFF(SECOND, '1970-01-01', GETUTCDATE())),
+    [UpdateTime] [bigint] NOT NULL CONSTRAINT [DF_Users_UpdateTime] DEFAULT (DATEDIFF(SECOND, '1970-01-01', GETUTCDATE())),
+    CONSTRAINT [PK_Users] PRIMARY KEY CLUSTERED ([UserID] ASC),
+    CONSTRAINT [UQ_Users_Username] UNIQUE NONCLUSTERED ([Username] ASC)
+)
+GO
+
+-- 创建更新时间触发器
+CREATE TRIGGER [dbo].[TR_Users_UpdateTime]
+ON [dbo].[Users]
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE [dbo].[Users]
+    SET [UpdateTime] = DATEDIFF(SECOND, '1970-01-01', GETUTCDATE())
+    FROM [dbo].[Users] u
+    INNER JOIN inserted i ON u.[UserID] = i.[UserID]
+END
+GO
+
+-- 创建管理员账号（密码：123456）
+INSERT INTO [dbo].[Users] ([Username], [Password], [RealName], [Role], [Status])
+VALUES ('admin', '$2a$10$X8VIET1jGBQRyU.bpgxX.OBhgq3sKztXqNX7XFXV0TC0Z5EEzW3Pu', N'系统管理员', 'admin', 1)
+GO
+
 -- 创建成绩表
 CREATE TABLE Scores (
     ScoreID INT PRIMARY KEY IDENTITY(1,1),        -- 成绩ID，主键自增
@@ -213,20 +255,6 @@ CREATE TABLE Scores (
         REFERENCES Students(StudentID),
     CONSTRAINT FK_Scores_Courses FOREIGN KEY (CourseID) 
         REFERENCES Courses(CourseID)
-)
-GO
-
--- 创建用户表
-CREATE TABLE Users (
-    UserID INT PRIMARY KEY IDENTITY(1,1),         -- 用户ID，主键自增
-    Username NVARCHAR(50) NOT NULL UNIQUE,        -- 用户名，唯一
-    Password NVARCHAR(100) NOT NULL,              -- 密码（MD5加密）
-    RealName NVARCHAR(50),                        -- 真实姓名
-    Role NVARCHAR(20),                            -- 用户角色
-    Status BIT NOT NULL,                          -- 账号状态
-    LastLoginTime BIGINT,                         -- 最后登录时间（时间戳）
-    CreateTime BIGINT NOT NULL DEFAULT DATEDIFF(SECOND, '1970-01-01', GETUTCDATE()),
-    UpdateTime BIGINT NOT NULL DEFAULT DATEDIFF(SECOND, '1970-01-01', GETUTCDATE())
 )
 GO
 
@@ -256,11 +284,6 @@ CREATE TABLE UserPermissions (
     CONSTRAINT FK_UserPermissions_Permissions FOREIGN KEY (PermissionID) 
         REFERENCES Permissions(PermissionID)
 )
-GO
-
--- 插入默认管理员账号
-INSERT INTO Users (Username, Password, RealName, Role, Status)
-VALUES ('admin', 'e10adc3949ba59abbe56e057f20f883e', N'系统管理员', 'admin', 1)
 GO
 
 -- 插入权限数据

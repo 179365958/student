@@ -53,15 +53,15 @@
           </el-breadcrumb>
         </div>
         <div class="header-right">
-          <el-dropdown @command="handleCommand">
-            <span class="user-dropdown">
-              {{ username }}
-              <el-icon class="el-icon--right"><arrow-down /></el-icon>
+          <el-dropdown class="avatar-container" @command="handleCommand">
+            <span class="avatar-wrapper">
+              <el-avatar :size="30" icon="UserFilled" />
+              <span class="user-name">{{ userStore.username }}</span>
+              <el-icon class="el-icon--right"><CaretBottom /></el-icon>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="profile">个人信息</el-dropdown-item>
-                <el-dropdown-item command="settings">系统设置</el-dropdown-item>
+                <el-dropdown-item command="changePassword">修改密码</el-dropdown-item>
                 <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -70,17 +70,23 @@
       </el-header>
 
       <!-- 主要内容 -->
-      <el-main class="main">
-        <router-view></router-view>
+      <el-main>
+        <router-view v-slot="{ Component }">
+          <component :is="Component" />
+        </router-view>
       </el-main>
     </el-container>
   </el-container>
+
+  <!-- 修改密码对话框 -->
+  <ChangePassword ref="changePasswordRef" />
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   DataLine,
   User,
@@ -89,14 +95,16 @@ import {
   Document,
   Fold,
   Expand,
-  ArrowDown
+  ArrowDown,
+  CaretBottom
 } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import ChangePassword from '@/components/ChangePassword.vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const isCollapse = ref(false)
+const changePasswordRef = ref(null)
 
 // 获取用户名的计算属性
 const username = computed(() => {
@@ -110,13 +118,18 @@ const toggleCollapse = () => {
 // 处理下拉菜单命令
 const handleCommand = async (command) => {
   switch (command) {
+    case 'changePassword':
+      changePasswordRef.value?.show()
+      break
     case 'logout':
       try {
-        // 清除用户状态
+        await ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
         await userStore.clearAuth()
-        // 提示用户
         ElMessage.success('已退出登录')
-        // 跳转到登录页面
         await router.push('/login')
       } catch (error) {
         console.error('退出登录失败:', error)
@@ -264,4 +277,4 @@ const handleMenuClick = (index) => {
   width: 200px;
   min-height: 400px;
 }
-</style> 
+</style>
